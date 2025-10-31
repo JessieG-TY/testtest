@@ -597,6 +597,10 @@ def modelform_factory(
         attrs["error_messages"] = error_messages
     if field_classes is not None:
         attrs["field_classes"] = field_classes
+    # Ensure callbacks provided or inherited from base form are available on Meta
+    # so ModelFormMetaclass/ModelFormOptions can pick them up consistently.
+    if formfield_callback is not None:
+        attrs["formfield_callback"] = formfield_callback
 
     bases = (form.Meta,) if hasattr(form, "Meta") else ()
     Meta = type("Meta", bases, attrs)
