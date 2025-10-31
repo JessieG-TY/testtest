@@ -268,6 +268,8 @@ class ModelFormMetaclass(DeclarativeFieldsMetaclass):
         formfield_callback = getattr(new_class, "formfield_callback", None)
         if formfield_callback is None:
             formfield_callback = opts.formfield_callback
+        elif opts.formfield_callback is None:
+            opts.formfield_callback = formfield_callback
         if isinstance(formfield_callback, staticmethod):
             formfield_callback = formfield_callback.__func__
         # We check if a string was passed to `fields` or `exclude`,
@@ -597,10 +599,6 @@ def modelform_factory(
         attrs["error_messages"] = error_messages
     if field_classes is not None:
         attrs["field_classes"] = field_classes
-    # Ensure callbacks provided or inherited from base form are available on Meta
-    # so ModelFormMetaclass/ModelFormOptions can pick them up consistently.
-    if formfield_callback is not None:
-        attrs["formfield_callback"] = formfield_callback
 
     bases = (form.Meta,) if hasattr(form, "Meta") else ()
     Meta = type("Meta", bases, attrs)
@@ -1541,7 +1539,7 @@ class ModelMultipleChoiceField(ModelChoiceField):
         "invalid_choice": _(
             "Select a valid choice. %(value)s is not one of the available choices."
         ),
-        "invalid_pk_value": _("“%(pk)s” is not a valid value."),
+        "invalid_pk_value": _(" ?(pk)s ?is not a valid value."),
     }
 
     def __init__(self, queryset, **kwargs):
@@ -1634,3 +1632,4 @@ def modelform_defines_fields(form_class):
     return hasattr(form_class, "_meta") and (
         form_class._meta.fields is not None or form_class._meta.exclude is not None
     )
+
